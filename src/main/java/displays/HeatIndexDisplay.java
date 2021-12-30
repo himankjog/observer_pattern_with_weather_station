@@ -4,22 +4,23 @@ import elements.DisplayElement;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import models.BaseData;
 import models.WeatherData;
 import publishers.WeatherDataPublisher;
-import subscribers.Subscriber;
+
+import java.util.Observable;
+import java.util.Observer;
 
 @Log4j2
 @Getter
 @Setter
-public class HeatIndexDisplay implements Subscriber, DisplayElement {
+public class HeatIndexDisplay implements Observer, DisplayElement {
     private Integer temperature;
     private Integer humidity;
-    private final WeatherDataPublisher weatherDataPublisher;
+    private final Observable observable;
 
-    public HeatIndexDisplay(final WeatherDataPublisher weatherDataPublisher) {
-        this.weatherDataPublisher = weatherDataPublisher;
-        weatherDataPublisher.addSubscriber(this);
+    public HeatIndexDisplay(final Observable observable) {
+        this.observable = observable;
+        observable.addObserver(this);
     }
 
     @Override
@@ -27,18 +28,19 @@ public class HeatIndexDisplay implements Subscriber, DisplayElement {
         log.info("Heat index is {}", (getHumidity()*getTemperature())/2);
     }
 
+
+    public void removeSubscription() {
+        log.warn("Removing HeatIndexDisplay as subscriber");
+        observable.deleteObserver(this);
+    }
+
     @Override
-    public void update(BaseData data) {
-        if (data instanceof WeatherData) {
-            final WeatherData weatherData = (WeatherData) data;
+    public void update(Observable obs, Object arg) {
+        if (obs instanceof WeatherDataPublisher) {
+            final WeatherData weatherData = ((WeatherDataPublisher) obs).getWeatherData();
             setHumidity(weatherData.getHumidity());
             setTemperature(weatherData.getTemperature());
             display();
         }
-    }
-
-    public void removeSubscription() {
-        log.warn("Removing HeatIndexDisplay as subscriber");
-        weatherDataPublisher.removeSubscriber(this);
     }
 }

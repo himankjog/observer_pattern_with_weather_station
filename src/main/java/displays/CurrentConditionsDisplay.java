@@ -4,25 +4,24 @@ import elements.DisplayElement;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import models.BaseData;
 import models.WeatherData;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import publishers.WeatherDataPublisher;
-import subscribers.Subscriber;
+
+import java.util.Observable;
+import java.util.Observer;
 
 
 @Log4j2
 @Getter
 @Setter
-public class CurrentConditionsDisplay implements Subscriber, DisplayElement {
+public class CurrentConditionsDisplay implements Observer, DisplayElement {
     private Integer temperature;
     private Integer humidity;
-    private WeatherDataPublisher weatherDataPublisher;
+    private final Observable observable;
 
-    public CurrentConditionsDisplay(final WeatherDataPublisher weatherDataPublisher) {
-        this.weatherDataPublisher = weatherDataPublisher;
-        weatherDataPublisher.addSubscriber(this);
+    public CurrentConditionsDisplay(final Observable observable) {
+        this.observable = observable;
+        observable.addObserver(this);
     }
     @Override
     public void display() {
@@ -30,9 +29,9 @@ public class CurrentConditionsDisplay implements Subscriber, DisplayElement {
     }
 
     @Override
-    public void update(BaseData data) {
-        if (data instanceof WeatherData) {
-            final WeatherData weatherData = (WeatherData) data;
+    public void update(Observable obs, Object arg) {
+        if (obs instanceof WeatherDataPublisher) {
+            final WeatherData weatherData = ((WeatherDataPublisher) obs).getWeatherData();
             setTemperature(weatherData.getTemperature());
             setHumidity(weatherData.getHumidity());
             display();

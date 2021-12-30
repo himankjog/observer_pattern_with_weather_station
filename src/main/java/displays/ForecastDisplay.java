@@ -4,26 +4,27 @@ import elements.DisplayElement;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import models.BaseData;
 import models.WeatherData;
 import publishers.WeatherDataPublisher;
-import subscribers.Subscriber;
+
+import java.util.Observable;
+import java.util.Observer;
 
 
 @Log4j2
 @Getter
 @Setter
-public class ForecastDisplay implements Subscriber, DisplayElement {
+public class ForecastDisplay implements Observer, DisplayElement {
     private static final String GOOD_FORECAST = "Forecast is good for the day.";
     private static final String RAIN_FORECAST = "Forecast is rainy for the day.";
 
     private Integer currentHumidity;
     private String forecast;
-    private final WeatherDataPublisher weatherDataPublisher;
+    private final Observable observable;
 
-    public ForecastDisplay(final WeatherDataPublisher weatherDataPublisher) {
-        this.weatherDataPublisher = weatherDataPublisher;
-        weatherDataPublisher.addSubscriber(this);
+    public ForecastDisplay(final Observable observable) {
+        this.observable = observable;
+        observable.addObserver(this);
     }
 
     @Override
@@ -32,13 +33,12 @@ public class ForecastDisplay implements Subscriber, DisplayElement {
     }
 
     @Override
-    public void update(BaseData data) {
-        if (data instanceof WeatherData) {
-            final WeatherData weatherData = (WeatherData) data;
+    public void update(Observable obs, Object arg) {
+        if (obs instanceof WeatherDataPublisher) {
+            final WeatherData weatherData = ((WeatherDataPublisher) obs).getWeatherData();
             setCurrentHumidity(weatherData.getHumidity());
             if (currentHumidity >= 50) setForecast(RAIN_FORECAST);
             else setForecast(GOOD_FORECAST);
-
             display();
         }
     }

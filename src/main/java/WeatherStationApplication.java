@@ -8,7 +8,7 @@ import publishers.WeatherDataPublisher;
 public class WeatherStationApplication {
 
     public static void main(String[] args) {
-        final WeatherDataPublisher weatherDataPublisher = WeatherDataPublisher.getInstance();
+        final WeatherDataPublisher weatherDataPublisher = WeatherDataPublisher.builder().build();
         final CurrentConditionsDisplay currentConditionsDisplay = new CurrentConditionsDisplay(weatherDataPublisher);
         final ForecastDisplay forecastDisplay = new ForecastDisplay(weatherDataPublisher);
         final HeatIndexDisplay heatIndexDisplay = new HeatIndexDisplay(weatherDataPublisher);
